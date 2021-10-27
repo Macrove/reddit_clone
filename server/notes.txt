@@ -1,0 +1,81 @@
+Graphql
+
+resolver -  it is a function or a method that resolves a value for a field or schema
+	- can return String, Number, Boolean
+	- return type 
+		if Object is returned
+			continue execution
+		if scalar is returned - generally kept at leaf node
+			execution completes
+		if null is returned
+			execution halts
+
+PHASES IN GRAPHQL QUERY
+	1. Parse - parsed into AST, (Abstract Syntax Tree)
+	2. Validate
+	3. Execute
+
+####eg1
+	query{
+		user{
+			name
+			email	
+		}
+		album{
+			title
+		}
+	}
+
+this get's parsed into AST
+	query
+	/   \
+      user   album
+      /  \        \  
+    name  email   title
+-----------------
+exp
+	query is root
+		user and album is first resolved parallely
+		name email and title are next
+
+
+
+####DEFAULT RESOLVERS
+export default{
+	Event:{
+		title:(root,args,context,info) => root.title
+	}
+}
+-----exp
+	root,args,context,info are default args
+	root - result from prev parents type
+	args - arguments provided to the field
+	context - a mutable object provided to all the resolvers
+	info - field specific info(rarely used)
+
+
+FETCHING DATA IN RESOLVERS
+
+
+
+####DEFAULT IMPLEMENTATION
+	export default{
+		Event : {
+			title:(root,args,context,info)=>root.title	
+		}
+	}
+
+
+	"""we should avoid mutating context inside of resolvers. We should prevent knowledge and concerns from mixing between each other, so that our resolvers are easy to understand, debug, and test."""
+
+
+Basic code
+------------------------------
+type Query{
+	event(id:ID!) : Event
+	}
+type Event {
+	title: String
+	photoUrl: String
+}
+------------------------------
