@@ -1,0 +1,6 @@
+redit_clone
+
+# Steps to view
+1. go in server directory and run -> yarn dev
+2. open another terminal and in web directory run -> yarn dev
+
