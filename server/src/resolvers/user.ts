@@ -44,6 +44,7 @@ export class UserResolver {
         const user = await em.findOne(User, { id: req.session.userId });
         return user;
     }
+
     @Mutation(() => UserResponse)
     async register(
         @Arg("options") options: UsernamePasswordInput,
@@ -108,12 +109,12 @@ export class UserResolver {
             return {
                 errors: [{
                     field: 'password',
-                    message: "invalid pass"
+                    message: "invalid password"
                 }]
             }
         }
-
-        req.session.userId = user.id;
+        req.session.userId = user.id
+        // console.log(req.session)
         return {
             user
         }

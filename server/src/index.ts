@@ -13,7 +13,7 @@ import connectRedis from 'connect-redis';
 import redis from 'redis';
 import session from 'express-session';
 import { MyContext } from 'src/types';
-import cors from 'cors'
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
 const main = async () => {
 
@@ -22,45 +22,69 @@ const main = async () => {
 
     const app = express();
 
-    let RedisStore = connectRedis(session)
-    let redisClient = redis.createClient()
-    redisClient.on("error", err => {
-        console.log(err)
-    })
-    app.use(cors({
-        origin: ["https://studio.apollographql.com", "http://localhost:3000"],
-        credentials: true
-    }
-    ))
+    // switch based on npm script executed (testing vs prod)
+    // const origin = (process.env.NODE_ENV === 'PLAYGROUND')
+    //     ? process.env.PLAYGROUND_OG
+    //     : process.env.CLIENT_ORIGIN;
+
+    // const corsOptions = {
+    //     origin: origin,
+    //     credentials: true,
+    // }
+
+    // other config
+
+
+    // app.use(cors({
+    //     origin: ["https://studio.apollographql.com", "http://localhost:3000"],
+    //     credentials: true
+    // })
+    // )
+
+
+
+
+
+    const RedisStore = connectRedis(session)
+    const redisClient = redis.createClient()
+
     app.use(
         session({
-            name: 'qid',
+            name: "qid",
             store: new RedisStore({
                 client: redisClient,
                 disableTouch: true
             }),
             cookie: {
-                maxAge: 1000 * 60 * 60 * 24 * 365,
+                maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+                secure: __prod__,
+                sameSite: 'lax',
                 httpOnly: true,
-                secure: true,
-                sameSite: "none",
-
             },
             saveUninitialized: false,
             secret: 'iuefiubfaeiubreiupbrvpueivbfiuebv',
             resave: false,
         })
     )
+
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
             resolvers: [HelloResolver, PostsResolver, UserResolver],
             validate: false
         }),
+        plugins: [
+            ApolloServerPluginLandingPageGraphQLPlayground
+        ],
         context: ({ req, res }): MyContext => ({ em: orm.em, req, res })
     });
     await apolloServer.start();
 
-    apolloServer.applyMiddleware({ app, cors: false });
+    apolloServer.applyMiddleware({
+        app, cors: {
+            origin: "http://localhost:3000",
+            credentials: true
+        }
+    });
 
     app.listen(4000, () => {
         console.log('PORT 4000 ACTIVE NOW!!')
